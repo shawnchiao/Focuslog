@@ -1,69 +1,65 @@
-/* Atmospheric base layer to keep the interface feeling light yet intentional */
+/* Minimalist Base Layer - Apple/Notion Inspired */
 :root {
-  --focus-bg: #f8fafc;
-  --focus-ink: #0f172a;
-  --focus-card: rgba(255, 255, 255, 0.85);
-  --focus-border: rgba(148, 163, 184, 0.35);
+  --focus-bg: #ffffff;
+  --focus-ink: #191919;
+  --focus-subtle: #999999;
+  --focus-border: #ebebeb;
+  --focus-highlight: #f0f0f0;
+  --selection-bg: #cce9ff;
 }
 
 * {
   box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   margin: 0;
-  background: radial-gradient(120% 100% at 10% 10%, #eef2ff 0%, #f8fafc 35%, #f8fafc 70%),
-    radial-gradient(120% 100% at 80% 0%, #f1f5f9 0%, #f8fafc 40%, #f8fafc 70%);
+  background-color: var(--focus-bg);
   color: var(--focus-ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 
-/* Soft aurora glow + subtle grid to add depth without heavy contrast */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(35% 35% at 15% 20%, rgba(15, 23, 42, 0.08), transparent 50%),
-    radial-gradient(30% 40% at 85% 10%, rgba(79, 70, 229, 0.06), transparent 55%),
-    radial-gradient(45% 45% at 30% 70%, rgba(14, 165, 233, 0.05), transparent 60%);
-  filter: blur(32px);
-  opacity: 0.9;
-  pointer-events: none;
-  z-index: 0;
-}
-
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image: radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.16) 1px, transparent 0);
-  background-size: 120px 120px;
-  opacity: 0.35;
-  pointer-events: none;
-  z-index: 0;
+::selection {
+  background: var(--selection-bg);
+  color: inherit;
 }
 
 #root {
-  position: relative;
-  z-index: 1;
+  isolation: isolate;
 }
 
-/* Reusable surfaces and pills that keep the core slate/white feel */
-.surface-card {
-  background: var(--focus-card);
-  border: 1px solid var(--focus-border);
-  box-shadow: 0 30px 80px -60px rgba(15, 23, 42, 0.35), 0 18px 40px -34px rgba(15, 23, 42, 0.2);
-  backdrop-filter: blur(12px);
+/* Scrollbar styling for a cleaner look */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-.stat-tile {
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.88));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.filter-pill {
-  background: rgba(15, 23, 42, 0.04);
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  backdrop-filter: blur(8px);
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Utilities */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.focus-ring {
+  transition: box-shadow 0.2s ease;
+}
+
+.focus-ring:focus-within {
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
 }

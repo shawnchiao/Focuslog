@@ -10,14 +10,14 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant = 'default', size = 'default', ...props }, ref) => {
-  const baseStyles = "inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 active:scale-95";
+  const baseStyles = "inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 active:scale-95 duration-200";
   
   const variants = {
-    default: "bg-slate-900 text-white hover:bg-slate-800 shadow-sm",
-    secondary: "bg-slate-100 text-slate-900 hover:bg-slate-200",
-    ghost: "hover:bg-slate-100 text-slate-600 hover:text-slate-900",
+    default: "bg-gray-900 text-white hover:bg-black shadow-sm",
+    secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200",
+    ghost: "hover:bg-gray-100 text-gray-500 hover:text-gray-900",
     destructive: "bg-red-50 text-red-600 hover:bg-red-100",
-    outline: "border border-slate-200 bg-transparent hover:bg-slate-50 text-slate-700"
+    outline: "border border-gray-200 bg-transparent hover:bg-gray-50 text-gray-700"
   };
 
   const sizes = {
@@ -41,7 +41,7 @@ export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputE
     <input
       ref={ref}
       className={cn(
-        "flex h-10 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-400 focus-visible:outline-none focus-visible:border-slate-400 disabled:cursor-not-allowed disabled:opacity-50",
+        "flex h-9 w-full rounded-md border border-gray-200 bg-transparent px-3 py-1 text-sm transition-all file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-400 focus-visible:outline-none focus-visible:border-gray-400 focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
       {...props}
@@ -57,7 +57,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(({ className
       type="checkbox"
       ref={ref}
       className={cn(
-        "appearance-none h-5 w-5 rounded-full border border-slate-300 checked:bg-slate-900 checked:border-slate-900 transition-all cursor-pointer relative focus:outline-none focus:ring-2 focus:ring-slate-100 focus:ring-offset-1",
+        "appearance-none h-5 w-5 rounded-full border border-gray-300 checked:bg-gray-900 checked:border-gray-900 transition-all cursor-pointer relative focus:outline-none focus:ring-2 focus:ring-gray-100 focus:ring-offset-1",
         "after:content-[''] after:absolute after:top-[2px] after:left-[6px] after:w-[6px] after:h-[10px] after:border-r-2 after:border-b-2 after:border-white after:rotate-45 after:opacity-0 checked:after:opacity-100",
         className
       )}
@@ -76,16 +76,16 @@ interface BadgeProps {
 
 export const Badge: React.FC<BadgeProps> = ({ children, className, variant = 'default', onClick }) => {
   const variants = {
-    default: "bg-slate-100 text-slate-700 hover:bg-slate-200 border-transparent", // Active selection style
-    secondary: "bg-transparent text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700", // Inactive style
-    outline: "text-slate-600 border-slate-200"
+    default: "bg-gray-100 text-gray-700 hover:bg-gray-200 border-transparent", // Active selection style
+    secondary: "bg-white border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900", // Inactive style
+    outline: "text-gray-600 border-gray-200"
   };
   
   return (
     <div 
       onClick={onClick}
       className={cn(
-        "inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium transition-colors",
+        "inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium transition-colors duration-200",
         variants[variant],
         onClick ? "cursor-pointer select-none" : "",
         className
@@ -103,7 +103,7 @@ interface CardProps {
 }
 
 export const Card: React.FC<CardProps> = ({ className, children }) => (
-  <div className={cn("rounded-xl border border-slate-100 bg-white", className)}>
+  <div className={cn("rounded-xl border border-gray-100 bg-white shadow-sm", className)}>
     {children}
   </div>
 );

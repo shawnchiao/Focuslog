@@ -280,33 +280,33 @@ function App() {
 
   // --- Render ---
   return (
-    <div className="h-screen flex flex-col bg-white text-slate-900 font-sans selection:bg-slate-100 overflow-hidden">
+    <div className="h-screen flex flex-col bg-[var(--focus-bg)] text-[var(--focus-ink)] font-sans overflow-hidden">
       {/* Fixed Navbar Zone - Minimal & Clean */}
-      <div className="shrink-0 z-20 bg-white/80 backdrop-blur-md border-b border-slate-100 relative">
-        <div className="max-w-3xl mx-auto px-6 h-14 flex items-center gap-4">
+      <div className="shrink-0 z-20 glass-panel relative">
+        <div className="max-w-3xl mx-auto px-6 h-16 flex items-center gap-6">
             
             {/* Logo */}
-             <h1 className="hidden sm:block text-base font-semibold tracking-tight text-slate-800 cursor-default whitespace-nowrap">
+             <h1 className="hidden sm:block text-sm font-semibold tracking-tight text-[var(--focus-ink)] cursor-default whitespace-nowrap opacity-80">
                FocusLog
             </h1>
 
-            {/* Input Group */}
+            {/* Input Group - Spotlight Style */}
             <form onSubmit={addTask} className="flex-1 flex items-center relative group m-0">
-                <div className="w-full h-9 flex items-center bg-slate-100/80 hover:bg-slate-100 rounded-lg px-3 border border-transparent focus-within:bg-white focus-within:border-slate-200 focus-within:shadow-sm transition-all duration-200 relative z-20">
+                <div className="w-full h-10 flex items-center bg-gray-50 hover:bg-gray-100 rounded-xl px-4 border border-transparent focus-within:bg-white focus-within:border-gray-200 focus-within:shadow-sm transition-all duration-200 relative z-20">
                 <input 
                     ref={inputRef}
                     value={inputValue}
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
-                    placeholder="Add task..."
-                    className="flex-1 bg-transparent border-none focus:ring-0 placeholder:text-slate-400 text-sm h-full w-full min-w-0"
+                    placeholder="What needs to be done?"
+                    className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none placeholder:text-gray-400 text-sm h-full w-full min-w-0"
                     autoFocus
                     autoComplete="off"
                 />
                 <div className="flex gap-1 items-center">
                     {inputValue.trim() && (
-                        <button type="submit" className="text-xs font-medium text-slate-500 hover:text-slate-900 bg-slate-200/50 hover:bg-slate-200 px-2 py-0.5 rounded transition-colors">
-                            Enter
+                        <button type="submit" className="text-[10px] uppercase font-bold tracking-wider text-gray-400 hover:text-gray-900 px-2 py-1 rounded transition-colors">
+                            Return
                         </button>
                     )}
                 </div>
@@ -314,7 +314,7 @@ function App() {
                 
                 {/* Dropdown Recommendations */}
                 {suggestedTags.length > 0 && (
-                <div className="absolute top-10 left-0 right-0 bg-white rounded-lg shadow-xl border border-slate-100 overflow-hidden z-50 py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                <div className="absolute top-12 left-0 right-0 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50 py-1 animate-in fade-in slide-in-from-top-1 duration-200">
                     {suggestedTags.map((tag, index) => (
                         <div 
                             key={tag}
@@ -322,13 +322,16 @@ function App() {
                                 e.preventDefault();
                                 insertTag(tag);
                             }}
-                            className={`px-3 py-2 text-sm cursor-pointer flex items-center gap-2 transition-colors ${
+                            className={`px-4 py-2.5 text-sm cursor-pointer flex items-center justify-between gap-2 transition-colors ${
                                 index === selectedTagIndex 
-                                    ? 'bg-slate-50 text-slate-900' 
-                                    : 'text-slate-600 hover:bg-slate-50'
+                                    ? 'bg-gray-100 text-gray-900' 
+                                    : 'text-gray-500 hover:bg-gray-50'
                             }`}
                         >
                             <span className="font-medium">#{tag}</span>
+                            {index === selectedTagIndex && (
+                                <span className="text-[10px] font-semibold text-gray-400 tracking-wider opacity-60">TAB</span>
+                            )}
                         </div>
                     ))}
                 </div>
@@ -336,30 +339,30 @@ function App() {
             </form>
 
              {/* Right Controls - Icon Only Toolbar */}
-             <div className="shrink-0 flex items-center justify-end gap-1">
+             <div className="shrink-0 flex items-center justify-end gap-2">
                 <Button 
-                   variant={showFilters ? 'secondary' : 'ghost'}
+                   variant="ghost"
                    size="icon" 
-                   className={`h-8 w-8 rounded-md transition-all relative ${showFilters ? 'bg-slate-100 text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+                   className={`h-8 w-8 rounded-lg transition-all relative ${showFilters ? 'bg-gray-100 text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
                    onClick={() => setShowFilters(!showFilters)}
                    title="Toggle Filters"
                 >
                    <FilterIcon className="w-4 h-4" />
                    {hasActiveFilters && (
-                       <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-slate-900 rounded-full ring-2 ring-white"></span>
+                       <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-blue-500 rounded-full ring-2 ring-white"></span>
                    )}
                 </Button>
 
-                <div className="w-px h-4 bg-slate-200 mx-1"></div>
+                <div className="w-px h-4 bg-gray-200 mx-1"></div>
 
                 <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => setExpandDetails(!expandDetails)}
-                    className={`h-8 w-8 rounded-md transition-all ${
+                    className={`h-8 w-8 rounded-lg transition-all ${
                         expandDetails 
-                        ? 'text-slate-900 bg-slate-50' 
-                        : 'text-slate-400 hover:text-slate-600'
+                        ? 'text-gray-900 bg-gray-50' 
+                        : 'text-gray-400 hover:text-gray-600'
                     }`}
                     title={expandDetails ? "Hide details" : "Show details"}
                 >
@@ -370,10 +373,10 @@ function App() {
                     variant="ghost"
                     size="icon"
                     onClick={() => setExpandSubtasks(!expandSubtasks)}
-                    className={`h-8 w-8 rounded-md transition-all ${
+                    className={`h-8 w-8 rounded-lg transition-all ${
                         expandSubtasks 
-                        ? 'text-slate-900 bg-slate-50' 
-                        : 'text-slate-400 hover:text-slate-600'
+                        ? 'text-gray-900 bg-gray-50' 
+                        : 'text-gray-400 hover:text-gray-600'
                     }`}
                     title={expandSubtasks ? "Collapse subtasks" : "Expand subtasks"}
                 >
@@ -384,13 +387,13 @@ function App() {
 
         {/* Collapsible Filter Drawer - Column Layout - Centered */}
         {showFilters && (
-            <div className="border-t border-slate-50 bg-slate-50/30 animate-in slide-in-from-top-2 duration-200 backdrop-blur-sm">
-                <div className="max-w-3xl mx-auto px-6 py-3">
-                    <div className="flex flex-col gap-3 items-start">
+            <div className="border-t border-gray-50 bg-gray-50/50 animate-in slide-in-from-top-2 duration-200 backdrop-blur-md">
+                <div className="max-w-3xl mx-auto px-6 py-4">
+                    <div className="flex flex-col gap-4 items-start">
                         
-                        <div className="flex items-center gap-2 w-full">
+                        <div className="flex items-center gap-3 w-full">
                             {/* Status Filter */}
-                            <div className="flex bg-slate-100 p-0.5 rounded-md">
+                            <div className="flex bg-gray-200/50 p-1 rounded-lg">
                                 {[
                                     { id: 'all', label: 'All' },
                                     { id: 'active', label: 'Active' },
@@ -399,10 +402,10 @@ function App() {
                                     <button
                                         key={tab.id}
                                         onClick={() => setStatusFilter(tab.id as any)}
-                                        className={`px-3 py-1 text-xs font-medium rounded-[4px] transition-all ${
+                                        className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
                                             statusFilter === tab.id 
-                                                ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200' 
-                                                : 'text-slate-500 hover:text-slate-700'
+                                                ? 'bg-white text-gray-900 shadow-sm' 
+                                                : 'text-gray-500 hover:text-gray-700'
                                         }`}
                                     >
                                         {tab.label}
@@ -416,15 +419,15 @@ function App() {
                                     type="date" 
                                     value={completionDateFilter}
                                     onChange={(e) => setCompletionDateFilter(e.target.value)}
-                                    className="text-xs border border-slate-200 rounded-md px-2 py-1 bg-white text-slate-600 focus:outline-none focus:border-slate-300 focus:ring-0 shadow-sm h-[26px]"
+                                    className="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600 focus:outline-none focus:border-gray-300 focus:ring-0 shadow-sm"
                                 />
                                 {completionDateFilter && (
                                 <button 
                                     onClick={() => setCompletionDateFilter('')}
-                                    className="absolute -right-1.5 -top-1.5 bg-slate-400 text-white rounded-full p-0.5 hover:bg-slate-600 shadow-sm z-10 transition-colors"
+                                    className="absolute -right-2 -top-2 bg-gray-400 text-white rounded-full p-0.5 hover:bg-gray-600 shadow-sm z-10 transition-colors"
                                     title="Clear date"
                                 >
-                                    <svg className="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"></path></svg>
                                 </button>
                                 )}
                             </div>
@@ -436,7 +439,7 @@ function App() {
                                         setSelectedTags([]);
                                         setCompletionDateFilter('');
                                     }}
-                                    className="ml-auto text-[10px] font-medium text-slate-400 hover:text-slate-900 transition-colors px-2"
+                                    className="ml-auto text-xs font-medium text-gray-400 hover:text-red-500 transition-colors px-2"
                                 >
                                     Clear filters
                                 </button>
@@ -445,7 +448,7 @@ function App() {
 
                         {/* Tags Filter */}
                         {allTags.length > 0 && (
-                             <div className="flex flex-wrap gap-2 pt-1">
+                             <div className="flex flex-wrap gap-2">
                                 {allTags.map(tag => (
                                     <Badge 
                                         key={tag} 
@@ -453,8 +456,8 @@ function App() {
                                         onClick={() => toggleTagSelection(tag)}
                                         className={`cursor-pointer transition-all border ${
                                             selectedTags.includes(tag) 
-                                                ? 'bg-white text-slate-900 shadow-sm border-slate-200 ring-1 ring-slate-200' 
-                                                : 'bg-transparent text-slate-500 border-transparent hover:bg-slate-100 hover:text-slate-700'
+                                                ? 'bg-blue-50 text-blue-700 border-blue-100' 
+                                                : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
                                         }`}
                                     >
                                         #{tag}
@@ -470,21 +473,21 @@ function App() {
 
       {/* Scrollable Content Zone */}
       <main className="flex-1 overflow-y-auto min-h-0 scroll-smooth">
-        <div className="max-w-3xl mx-auto px-6 py-8 pb-32">
+        <div className="max-w-3xl mx-auto px-6 py-8 pb-40">
             {sortedTasks.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-24 opacity-40 select-none">
-                    <div className="w-10 h-10 border border-slate-300 border-dashed rounded-lg flex items-center justify-center mb-3">
-                        <PlusIcon className="w-4 h-4 text-slate-400" />
+                <div className="flex flex-col items-center justify-center py-32 opacity-40 select-none">
+                    <div className="w-12 h-12 border border-gray-200 border-dashed rounded-xl flex items-center justify-center mb-4">
+                        <PlusIcon className="w-5 h-5 text-gray-300" />
                     </div>
-                    <p className="text-slate-400 text-sm font-medium">
-                        {hasActiveFilters ? 'No matching tasks' : 'No tasks'}
+                    <p className="text-gray-400 text-sm font-medium">
+                        {hasActiveFilters ? 'No tasks match your filters' : 'FocusLog is empty'}
                     </p>
                 </div>
             ) : ((statusFilter === 'completed' || completionDateFilter) && groupedCompletedTasks) ? (
                 Object.keys(groupedCompletedTasks).sort((a, b) => b.localeCompare(a)).map(date => (
-                    <div key={date} className="mb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 pl-1 sticky top-0 bg-white/90 backdrop-blur w-fit pr-4 rounded-r-md z-10 py-2">{date}</h3>
-                        <div className="space-y-px">
+                    <div key={date} className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 pl-1">{date}</h3>
+                        <div className="space-y-2">
                             {groupedCompletedTasks[date].map(task => (
                                 <TaskItem
                                     key={task.id}
@@ -504,7 +507,7 @@ function App() {
                     </div>
                 ))
             ) : (
-                <div className="space-y-px">
+                <div className="space-y-3">
                 {sortedTasks.map(task => (
                     <TaskItem
                     key={task.id}
