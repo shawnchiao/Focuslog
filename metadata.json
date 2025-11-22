@@ -1,0 +1,5 @@
+{
+  "name": "FocusLog",
+  "description": "A minimalist, tag-based personal task tracker and work log using local storage.",
+  "requestFramePermissions": []
+}
