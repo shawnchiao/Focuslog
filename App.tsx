@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { generateId, parseTaskInput } from './utils';
 import { Task, Subtask } from './types';
 import { Input, Button, Badge } from './components/ui';
@@ -15,14 +15,28 @@ function App() {
   });
 
   const [inputValue, setInputValue] = useState('');
+  const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
+  const [selectedTagIndex, setSelectedTagIndex] = useState(0);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'completed'>('active');
   const [searchQuery, setSearchQuery] = useState('');
   const [completionDateFilter, setCompletionDateFilter] = useState<string>('');
+  
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // --- Persistence ---
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+  }, [tasks]);
+
+  // --- Derived State (Filters & Tags) ---
+  const allTags = useMemo(() => {
+    const tags = new Set<string>();
+    tasks.forEach(t => {
+      t.tags.forEach(tag => tags.add(tag));
+      t.subtasks.forEach(st => st.tags.forEach(tag => tags.add(tag)));
+    });
+    return Array.from(tags).sort();
   }, [tasks]);
 
   // --- Actions ---
@@ -44,6 +58,7 @@ function App() {
 
     setTasks(prev => [newTask, ...prev]);
     setInputValue('');
+    setSuggestedTags([]);
   };
 
   const updateTask = (id: string, updates: Partial<Task>) => {
@@ -123,15 +138,86 @@ function App() {
     }));
   };
 
-  // --- Derived State (Filters) ---
-  const allTags = useMemo(() => {
-    const tags = new Set<string>();
-    tasks.forEach(t => {
-      t.tags.forEach(tag => tags.add(tag));
-      t.subtasks.forEach(st => st.tags.forEach(tag => tags.add(tag)));
-    });
-    return Array.from(tags).sort();
-  }, [tasks]);
+  // --- Input Handling with Autocomplete ---
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setInputValue(val);
+    
+    const cursor = e.target.selectionStart || 0;
+    const lastSpaceIndex = val.lastIndexOf(' ', cursor - 1);
+    const start = lastSpaceIndex === -1 ? 0 : lastSpaceIndex + 1;
+    const currentWord = val.substring(start, cursor);
+
+    if (currentWord.startsWith('#') && currentWord.length > 1) {
+      const search = currentWord.slice(1).toLowerCase();
+      // Filter and Sort: StartsWith matches first, then others.
+      const matches = allTags.filter(t => t.toLowerCase().includes(search))
+        .sort((a, b) => {
+            const aStarts = a.toLowerCase().startsWith(search);
+            const bStarts = b.toLowerCase().startsWith(search);
+            if (aStarts && !bStarts) return -1;
+            if (!aStarts && bStarts) return 1;
+            return a.localeCompare(b);
+        });
+
+      if (matches.length > 0) {
+         setSuggestedTags(matches.slice(0, 5)); // Limit to top 5
+         setSelectedTagIndex(0);
+      } else {
+         setSuggestedTags([]);
+      }
+    } else {
+      setSuggestedTags([]);
+    }
+  };
+
+  const insertTag = (tag: string) => {
+    const inputEl = inputRef.current;
+    if (!inputEl) return;
+
+    const val = inputValue;
+    const cursor = inputEl.selectionStart || 0;
+    
+    // Find the boundaries of the tag currently being typed
+    const lastSpaceIndex = val.lastIndexOf(' ', cursor - 1);
+    const start = lastSpaceIndex === -1 ? 0 : lastSpaceIndex + 1;
+    
+    const before = val.substring(0, start);
+    const after = val.substring(cursor);
+    
+    // Add a space after the tag if there isn't one
+    const spacer = after.startsWith(' ') ? '' : ' ';
+    
+    const newValue = `${before}#${tag}${spacer}${after}`;
+    
+    setInputValue(newValue);
+    setSuggestedTags([]);
+    
+    // Reset focus and move cursor to end of inserted tag
+    setTimeout(() => {
+      inputEl.focus();
+      const newCursorPos = before.length + 1 + tag.length + spacer.length;
+      inputEl.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (suggestedTags.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedTagIndex(prev => (prev + 1) % suggestedTags.length);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedTagIndex(prev => (prev - 1 + suggestedTags.length) % suggestedTags.length);
+      } else if (e.key === 'Tab' || e.key === 'Enter') {
+        e.preventDefault();
+        insertTag(suggestedTags[selectedTagIndex]);
+      } else if (e.key === 'Escape') {
+        e.preventDefault(); // Prevent clearing input if it's just closing menu
+        setSuggestedTags([]);
+      }
+    }
+  };
 
   const filteredTasks = useMemo(() => {
     return tasks.filter(task => {
@@ -216,16 +302,48 @@ function App() {
 
           {/* Input Area */}
           <form onSubmit={addTask} className="relative">
-            <div className="flex gap-2 items-center bg-slate-50 rounded-xl p-2 border border-slate-200 focus-within:border-slate-400 focus-within:ring-1 focus-within:ring-slate-400 transition-all shadow-sm">
+            <div className="flex gap-2 items-center bg-slate-50 rounded-xl p-2 border border-slate-200 focus-within:border-slate-400 focus-within:ring-1 focus-within:ring-slate-400 transition-all shadow-sm relative z-20">
               <input 
+                ref={inputRef}
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
                 placeholder="What do you need to do? #tag"
                 className="flex-1 bg-transparent border-none focus:ring-0 placeholder:text-slate-400 text-sm py-1 px-2"
                 autoFocus
+                autoComplete="off"
               />
               <Button type="submit" size="sm" className="rounded-lg">Add</Button>
             </div>
+            
+            {/* Dropdown Recommendations */}
+            {suggestedTags.length > 0 && (
+              <div className="absolute top-full left-2 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50 py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-50 mb-1">
+                      Suggestions
+                  </div>
+                  {suggestedTags.map((tag, index) => (
+                    <div 
+                        key={tag}
+                        onMouseDown={(e) => {
+                            // Use onMouseDown to prevent input blur before click handles
+                            e.preventDefault();
+                            insertTag(tag);
+                        }}
+                        className={`px-3 py-2 text-sm cursor-pointer flex items-center justify-between transition-colors ${
+                            index === selectedTagIndex 
+                                ? 'bg-slate-100 text-slate-900' 
+                                : 'text-slate-600 hover:bg-slate-50'
+                        }`}
+                    >
+                        <span className="font-medium">#{tag}</span>
+                        {index === selectedTagIndex && (
+                            <span className="text-[10px] text-slate-400 bg-white border border-slate-200 px-1 rounded shadow-sm">Tab</span>
+                        )}
+                    </div>
+                  ))}
+              </div>
+            )}
           </form>
         </div>
       </div>
