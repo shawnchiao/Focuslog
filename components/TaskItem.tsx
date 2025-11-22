@@ -13,6 +13,8 @@ interface TaskItemProps {
   onToggleSubtask: (taskId: string, subtaskId: string) => void;
   onDeleteSubtask: (taskId: string, subtaskId: string) => void;
   onUpdateSubtask: (taskId: string, subtaskId: string, updates: Partial<Subtask>) => void;
+  expandDetails: boolean;
+  expandSubtasks: boolean;
 }
 
 interface SubtaskItemProps {
@@ -21,14 +23,23 @@ interface SubtaskItemProps {
     onToggle: (tId: string, sId: string) => void;
     onDelete: (tId: string, sId: string) => void;
     onUpdate: (tId: string, sId: string, updates: Partial<Subtask>) => void;
+    expandDetails: boolean;
 }
+
+// Helper for button visual states
+const getButtonStyle = (isActive: boolean, hasContent: boolean) => {
+    if (isActive) return "bg-slate-200 text-slate-900 shadow-sm"; // Open/Active state
+    if (hasContent) return "text-slate-600 bg-slate-50 hover:bg-slate-100 hover:text-slate-900"; // Has content (closed)
+    return "text-slate-300 hover:text-slate-600 hover:bg-slate-100"; // Empty (closed)
+};
 
 const SubtaskItem: React.FC<SubtaskItemProps> = ({
     taskId,
     subtask,
     onToggle,
     onDelete,
-    onUpdate
+    onUpdate,
+    expandDetails
 }) => {
     const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
     const [localDescription, setLocalDescription] = useState(subtask.description || '');
@@ -36,6 +47,10 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({
     useEffect(() => {
         setLocalDescription(subtask.description || '');
     }, [subtask.description]);
+
+    useEffect(() => {
+        setIsDescriptionOpen(expandDetails);
+    }, [expandDetails]);
 
     const handleDescriptionBlur = () => {
         if (localDescription !== subtask.description) {
@@ -59,25 +74,33 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({
                 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                        <span className={`text-sm transition-colors ${subtask.isCompleted ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
-                            {subtask.title}
-                            {subtask.tags.map(t => <span key={t} className="ml-2 text-[10px] text-slate-400 font-medium">#{t}</span>)}
-                        </span>
+                        <div className="flex items-center gap-2">
+                            <span className={`text-sm transition-colors ${subtask.isCompleted ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                                {subtask.title}
+                                {subtask.tags.map(t => <span key={t} className="ml-2 text-[10px] text-slate-400 font-medium">#{t}</span>)}
+                            </span>
+                            {/* Mini indicator for description if collapsed */}
+                            {subtask.description && !isDescriptionOpen && (
+                                <FileTextIcon className="w-3 h-3 text-slate-400 opacity-70" />
+                            )}
+                        </div>
                         
-                        <div className={`flex items-center opacity-0 group-hover/sub:opacity-100 transition-opacity ${isDescriptionOpen ? 'opacity-100' : ''}`}>
+                        <div className={`flex items-center gap-1 opacity-0 group-hover/sub:opacity-100 transition-opacity ${isDescriptionOpen ? 'opacity-100' : ''}`}>
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className={`h-6 w-6 ${subtask.description ? 'text-slate-600' : 'text-slate-300'}`}
+                                className={`h-6 w-6 rounded transition-all ${getButtonStyle(isDescriptionOpen, !!subtask.description)}`}
                                 onClick={() => setIsDescriptionOpen(!isDescriptionOpen)}
+                                title={subtask.description ? "Edit Description" : "Add Description"}
                             >
                                 <FileTextIcon className="w-3 h-3" />
                             </Button>
                             <Button
                                  variant="ghost"
                                  size="icon"
-                                 className="h-6 w-6 text-slate-300 hover:text-red-500"
+                                 className="h-6 w-6 rounded text-slate-300 hover:text-red-600 hover:bg-red-50 hover:scale-110 transition-all"
                                  onClick={() => onDelete(taskId, subtask.id)}
+                                 title="Delete"
                             >
                                 <TrashIcon className="w-3 h-3" />
                             </Button>
@@ -85,10 +108,10 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({
                     </div>
 
                      {isDescriptionOpen && (
-                        <div className="mt-2">
+                        <div className="mt-2 animate-in fade-in slide-in-from-top-1 duration-150">
                             <textarea 
                                 className="w-full text-sm text-slate-600 bg-transparent placeholder:text-slate-300 border-none p-0 focus:ring-0 resize-none min-h-[40px]"
-                                placeholder="Notes..."
+                                placeholder="Add notes..."
                                 value={localDescription}
                                 onChange={(e) => setLocalDescription(e.target.value)}
                                 onBlur={handleDescriptionBlur}
@@ -110,7 +133,9 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   onAddSubtask,
   onToggleSubtask,
   onDeleteSubtask,
-  onUpdateSubtask
+  onUpdateSubtask,
+  expandDetails,
+  expandSubtasks
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
@@ -121,6 +146,14 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   useEffect(() => {
     setLocalDescription(task.description || '');
   }, [task.description]);
+
+  useEffect(() => {
+      setIsDescriptionOpen(expandDetails);
+  }, [expandDetails]);
+
+  useEffect(() => {
+      setIsExpanded(expandSubtasks);
+  }, [expandSubtasks]);
 
   const handleAddSubtask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,7 +173,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   };
 
   const hasSubtasks = task.subtasks.length > 0;
-  const shouldRenderBottomArea = hasSubtasks || isAddingSubtask || isDescriptionOpen;
 
   return (
     <div className="group flex flex-col py-3 border-b border-slate-100 last:border-0 transition-colors hover:bg-slate-50/50 px-4 -mx-4">
@@ -170,20 +202,25 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                 {task.title}
               </span>
               
-              <div className="flex flex-wrap gap-2 mt-1.5">
+              <div className="flex flex-wrap gap-2 mt-1.5 items-center">
                 {task.tags.map(tag => (
                   <span key={tag} className="text-[11px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-md font-medium tracking-wide">
                     #{tag}
                   </span>
                 ))}
+                {/* Mini indicator for description if collapsed */}
+                {task.description && !isDescriptionOpen && (
+                    <FileTextIcon className="w-3 h-3 text-slate-400 opacity-70" />
+                )}
               </div>
             </div>
 
-            <div className={`flex items-center gap-0.5 transition-opacity ${isDescriptionOpen || isAddingSubtask ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+            {/* Action Buttons */}
+            <div className={`flex items-center gap-1 transition-opacity ${isDescriptionOpen || isAddingSubtask ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
               <Button 
                 variant="ghost"
                 size="icon" 
-                className={`h-8 w-8 ${task.description ? 'text-slate-700' : 'text-slate-300 hover:text-slate-600'}`}
+                className={`h-8 w-8 rounded-md transition-all ${getButtonStyle(isDescriptionOpen, !!task.description)}`}
                 onClick={() => setIsDescriptionOpen(!isDescriptionOpen)}
                 title="Description"
               >
@@ -192,7 +229,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
               <Button 
                 variant="ghost"
                 size="icon" 
-                className={`h-8 w-8 ${isAddingSubtask ? 'text-slate-700' : 'text-slate-300 hover:text-slate-600'}`}
+                className={`h-8 w-8 rounded-md transition-all ${getButtonStyle(isAddingSubtask, false)}`}
                 onClick={() => setIsAddingSubtask(!isAddingSubtask)}
                 title="Add Subtask"
               >
@@ -201,7 +238,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-8 w-8 text-slate-300 hover:text-red-600"
+                className="h-8 w-8 rounded-md text-slate-300 hover:text-red-600 hover:bg-red-50 hover:scale-105 transition-all"
                 onClick={() => onDelete(task.id)}
                 title="Delete Task"
               >
@@ -232,7 +269,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                         onClick={() => setIsExpanded(!isExpanded)}
                         className="group/btn flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors mb-2 select-none"
                     >
-                        <div className="bg-slate-100 group-hover/btn:bg-slate-200 rounded p-0.5">
+                        <div className="bg-slate-100 group-hover/btn:bg-slate-200 rounded p-0.5 transition-colors">
                             {isExpanded ? <ChevronDownIcon className="w-3 h-3" /> : <ChevronRightIcon className="w-3 h-3" />}
                         </div>
                         {task.subtasks.filter(st => st.isCompleted).length}/{task.subtasks.length} subtasks
@@ -249,18 +286,19 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                                 onToggle={onToggleSubtask}
                                 onDelete={onDeleteSubtask}
                                 onUpdate={onUpdateSubtask}
+                                expandDetails={expandDetails}
                             />
                         ))}
 
                         {isAddingSubtask && (
-                            <div className="pl-6 border-l-2 border-slate-100 ml-2.5 py-1">
+                            <div className="pl-6 border-l-2 border-slate-100 ml-2.5 py-2">
                                 <form onSubmit={handleAddSubtask} className="flex gap-2">
                                     <Input
                                         autoFocus
                                         value={subtaskInput}
                                         onChange={(e) => setSubtaskInput(e.target.value)}
                                         placeholder="New subtask..."
-                                        className="h-8 text-sm border-slate-200 bg-slate-50 focus:bg-white"
+                                        className="h-8 text-sm border-slate-200 bg-slate-50 focus:bg-white focus:shadow-sm transition-all"
                                     />
                                     <Button type="submit" size="sm" className="h-8">Add</Button>
                                 </form>

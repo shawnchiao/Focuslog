@@ -3,7 +3,7 @@ import { generateId, parseTaskInput } from './utils';
 import { Task, Subtask } from './types';
 import { Input, Button, Badge } from './components/ui';
 import { TaskItem } from './components/TaskItem';
-import { PlusIcon, CheckIcon } from './components/Icons';
+import { PlusIcon, CheckIcon, EyeIcon, EyeOffIcon, ChevronsDownIcon, ChevronsUpIcon } from './components/Icons';
 
 const STORAGE_KEY = 'focuslog_tasks_v1';
 
@@ -21,6 +21,8 @@ function App() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'completed'>('active');
   const [searchQuery, setSearchQuery] = useState('');
   const [completionDateFilter, setCompletionDateFilter] = useState<string>('');
+  const [expandDetails, setExpandDetails] = useState(false);
+  const [expandSubtasks, setExpandSubtasks] = useState(false);
   
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -375,22 +377,58 @@ function App() {
 
             <div className="h-4 w-px bg-slate-200"></div>
 
-            <div className="relative flex items-center group">
-               <span className="text-xs text-slate-400 font-medium mr-2 uppercase tracking-wider">Date</span>
-               <input 
-                  type="date" 
-                  value={completionDateFilter}
-                  onChange={(e) => setCompletionDateFilter(e.target.value)}
-                  className="text-xs border border-slate-200 rounded-md px-2 py-1 bg-white text-slate-600 focus:outline-none focus:border-slate-400 font-medium"
-               />
-               {completionDateFilter && (
-                 <button 
-                   onClick={() => setCompletionDateFilter('')}
-                   className="absolute -right-2 -top-2 bg-slate-900 text-white rounded-full p-0.5 hover:bg-slate-700 shadow-sm"
-                 >
-                   <svg className="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-                 </button>
-               )}
+            {/* Date & View Controls */}
+            <div className="flex gap-2 items-center">
+              <div className="relative flex items-center group">
+                 <span className="text-xs text-slate-400 font-medium mr-2 uppercase tracking-wider">Date</span>
+                 <input 
+                    type="date" 
+                    value={completionDateFilter}
+                    onChange={(e) => setCompletionDateFilter(e.target.value)}
+                    className="text-xs border border-slate-200 rounded-md px-2 py-1 bg-white text-slate-600 focus:outline-none focus:border-slate-400 font-medium"
+                 />
+                 {completionDateFilter && (
+                   <button 
+                     onClick={() => setCompletionDateFilter('')}
+                     className="absolute -right-2 -top-2 bg-slate-900 text-white rounded-full p-0.5 hover:bg-slate-700 shadow-sm"
+                   >
+                     <svg className="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+                   </button>
+                 )}
+              </div>
+
+              <div className="h-4 w-px bg-slate-200 mx-1"></div>
+
+              {/* View Toggles Group */}
+              <div className="flex items-center border border-slate-200 rounded-md bg-white overflow-hidden shadow-sm">
+                {/* Descriptions Toggle */}
+                <button
+                  onClick={() => setExpandDetails(!expandDetails)}
+                  className={`flex items-center justify-center w-7 h-7 transition-colors ${
+                    expandDetails 
+                      ? 'bg-slate-100 text-slate-900' 
+                      : 'bg-white text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+                  }`}
+                  title={expandDetails ? "Hide all details" : "Show all details"}
+                >
+                  {expandDetails ? <EyeOffIcon className="w-3.5 h-3.5" /> : <EyeIcon className="w-3.5 h-3.5" />}
+                </button>
+                
+                <div className="w-px h-4 bg-slate-100"></div>
+                
+                {/* Subtasks Toggle */}
+                 <button
+                  onClick={() => setExpandSubtasks(!expandSubtasks)}
+                  className={`flex items-center justify-center w-7 h-7 transition-colors ${
+                    expandSubtasks 
+                      ? 'bg-slate-100 text-slate-900' 
+                      : 'bg-white text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+                  }`}
+                  title={expandSubtasks ? "Collapse all subtasks" : "Expand all subtasks"}
+                >
+                  {expandSubtasks ? <ChevronsUpIcon className="w-3.5 h-3.5" /> : <ChevronsDownIcon className="w-3.5 h-3.5" />}
+                </button>
+              </div>
             </div>
 
             <div className="h-4 w-px bg-slate-200"></div>
@@ -437,6 +475,8 @@ function App() {
                                 onUpdateSubtask={updateSubtask}
                                 onToggleSubtask={toggleSubtask}
                                 onDeleteSubtask={deleteSubtask}
+                                expandDetails={expandDetails}
+                                expandSubtasks={expandSubtasks}
                             />
                         ))}
                      </div>
@@ -456,6 +496,8 @@ function App() {
                   onUpdateSubtask={updateSubtask}
                   onToggleSubtask={toggleSubtask}
                   onDeleteSubtask={deleteSubtask}
+                  expandDetails={expandDetails}
+                  expandSubtasks={expandSubtasks}
                 />
               ))}
             </div>
