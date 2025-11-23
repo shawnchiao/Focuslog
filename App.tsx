@@ -58,7 +58,7 @@ function App() {
         });
     };
     collectTags(tasks);
-    return Array.from(tags).sort();
+    return Array.from(tags).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
   }, [tasks]);
 
   // --- Actions ---
