@@ -71,7 +71,8 @@ export const deleteFromTree = <T extends Task | Subtask>(items: T[], id: string)
 export const addToTree = <T extends Task | Subtask>(items: T[], parentId: string, newSubtask: Subtask): T[] => {
     return items.map(item => {
         if (item.id === parentId) {
-            return { ...item, subtasks: [...item.subtasks, newSubtask] };
+            const currentSubtasks = item.subtasks || [];
+            return { ...item, subtasks: [...currentSubtasks, newSubtask] };
         }
         if (item.subtasks && item.subtasks.length > 0) {
              return { ...item, subtasks: addToTree(item.subtasks, parentId, newSubtask) };

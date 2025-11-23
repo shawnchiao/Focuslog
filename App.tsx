@@ -11,7 +11,23 @@ function App() {
   // --- State ---
   const [tasks, setTasks] = useState<Task[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : [];
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            // Sanitize: ensure all tasks and subtasks have subtasks array
+            const sanitize = (items: any[]): any[] => {
+                return items.map(item => ({
+                    ...item,
+                    subtasks: item.subtasks ? sanitize(item.subtasks) : []
+                }));
+            };
+            return sanitize(parsed);
+        } catch (e) {
+            console.error("Failed to parse tasks", e);
+            return [];
+        }
+    }
+    return [];
   });
 
   const [inputValue, setInputValue] = useState('');
