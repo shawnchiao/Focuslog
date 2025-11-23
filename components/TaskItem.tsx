@@ -59,14 +59,17 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({
     };
 
     return (
-        <div className="flex flex-col relative group/sub pl-9 py-1">
+        <div 
+            className="flex flex-col relative group/sub pl-9 py-1 cursor-pointer"
+            onClick={() => onToggle(taskId, subtask.id)}
+        >
              {/* Tree Line */}
             <div className="absolute left-[19px] top-0 bottom-0 w-px bg-gray-100 group-last/sub:bottom-auto group-last/sub:h-4"></div>
             <div className="absolute left-[19px] top-4 w-3 h-px bg-gray-100"></div>
 
             <div className="flex items-start gap-3 relative z-10">
                 <button 
-                    onClick={() => onToggle(taskId, subtask.id)}
+                    onClick={(e) => { e.stopPropagation(); onToggle(taskId, subtask.id); }}
                     className={`mt-1.5 w-3.5 h-3.5 rounded border flex items-center justify-center transition-all shrink-0 ${
                     subtask.isCompleted 
                         ? 'bg-gray-400 border-gray-400 text-white' 
@@ -89,7 +92,10 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({
                             )}
                         </div>
                         
-                        <div className={`flex items-center opacity-0 group-hover/sub:opacity-100 transition-opacity ${isDescriptionOpen ? 'opacity-100' : ''}`}>
+                        <div 
+                            className={`flex items-center opacity-0 group-hover/sub:opacity-100 transition-opacity ${isDescriptionOpen ? 'opacity-100' : ''}`}
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <Button
                                 variant="ghost"
                                 size="icon"
@@ -112,7 +118,10 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({
                     </div>
 
                      {isDescriptionOpen && (
-                        <div className="mt-1.5 animate-in fade-in slide-in-from-top-1 duration-150 pl-1">
+                        <div 
+                            className="mt-1.5 animate-in fade-in slide-in-from-top-1 duration-150 pl-1"
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <textarea 
                                 className="w-full text-xs text-gray-600 bg-transparent placeholder:text-gray-300 border-none p-0 focus:ring-0 resize-none min-h-[32px]"
                                 placeholder="Add notes..."
@@ -179,13 +188,16 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   const hasSubtasks = task.subtasks.length > 0;
 
   return (
-    <div className="group flex flex-col py-2 border-b border-gray-50 last:border-0 transition-colors hover:bg-gray-50/40 px-3 -mx-3 rounded-lg">
+    <div 
+      className="group flex flex-col py-2 border-b border-gray-50 last:border-0 transition-colors hover:bg-gray-50/40 px-3 -mx-3 rounded-lg cursor-pointer"
+      onClick={() => onToggle(task.id)}
+    >
       {/* Main Task Row */}
       <div className="flex items-start gap-3">
         <div className="pt-1 relative">
            {/* Checkbox - iOS style circle */}
           <button 
-            onClick={() => onToggle(task.id)}
+            onClick={(e) => { e.stopPropagation(); onToggle(task.id); }}
             className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-200 ${
               task.isCompleted 
                 ? 'bg-gray-900 border-gray-900 text-white shadow-sm scale-90' 
@@ -227,7 +239,10 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             </div>
 
             {/* Action Buttons - Opacity hover effect */}
-            <div className={`flex items-center gap-0.5 transition-opacity ${isDescriptionOpen || isAddingSubtask ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+            <div 
+              className={`flex items-center gap-0.5 transition-opacity ${isDescriptionOpen || isAddingSubtask ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+              onClick={(e) => e.stopPropagation()}
+            >
               <Button 
                 variant="ghost"
                 size="icon" 
@@ -260,7 +275,10 @@ export const TaskItem: React.FC<TaskItemProps> = ({
 
           {/* Description Field (Seamless) */}
           {isDescriptionOpen && (
-            <div className="mt-2 mb-3 pl-1 animate-in fade-in slide-in-from-top-1 duration-200 relative">
+            <div 
+              className="mt-2 mb-3 pl-1 animate-in fade-in slide-in-from-top-1 duration-200 relative"
+              onClick={(e) => e.stopPropagation()}
+            >
                  <div className="absolute left-[-10px] top-2 bottom-2 w-0.5 bg-gray-100 rounded-full"></div>
                 <textarea 
                     className="w-full text-sm text-gray-600 bg-transparent border-none p-0 focus:ring-0 focus:outline-none resize-none min-h-[50px] placeholder:text-gray-300 leading-relaxed"
@@ -275,7 +293,10 @@ export const TaskItem: React.FC<TaskItemProps> = ({
 
           {/* Subtasks Section */}
           {(hasSubtasks || isAddingSubtask) && (
-             <div className="mt-1">
+             <div 
+                className="mt-1"
+                onClick={(e) => e.stopPropagation()}
+             >
                 {hasSubtasks && (
                     <button 
                         onClick={() => setIsExpanded(!isExpanded)}
