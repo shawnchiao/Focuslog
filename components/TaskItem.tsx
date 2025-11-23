@@ -136,12 +136,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                 {task.description && !isDescriptionOpen && (
                     <FileTextIcon className="w-3 h-3 text-gray-300" />
                 )}
-                {hasSubtasks && !isExpanded && (
-                    <span className="text-[10px] text-gray-400 font-medium flex items-center gap-0.5">
-                        <div className="w-1 h-1 rounded-full bg-gray-300"></div>
-                        {task.subtasks.length}
-                    </span>
-                )}
               </div>
             </div>
 
@@ -212,7 +206,9 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                         <div className="bg-gray-50 group-hover/btn:bg-gray-100 rounded p-0.5 transition-colors">
                             {isExpanded ? <ChevronDownIcon className="w-3 h-3" /> : <ChevronRightIcon className="w-3 h-3" />}
                         </div>
-                        {isRoot && <span className="text-[10px] uppercase tracking-wider font-bold opacity-70">Subtasks</span>}
+                         <span className="text-[10px] uppercase tracking-wider font-bold opacity-70">
+                            {task.subtasks.length}
+                        </span>
                     </button>
                 )}
 
