@@ -24,3 +24,58 @@ export const formatDate = (isoDate: string): string => {
 export const getISODateOnly = (date: Date = new Date()) => {
   return date.toISOString().split('T')[0];
 }
+
+// Recursive Tree Helpers
+
+export const toggleInTree = <T extends Task | Subtask>(items: T[], id: string): T[] => {
+    return items.map(item => {
+        if (item.id === id) {
+            const isCompleted = !item.isCompleted;
+            return {
+                ...item,
+                isCompleted,
+                completedAt: isCompleted ? new Date().toISOString() : undefined,
+                updatedAt: new Date().toISOString()
+            };
+        }
+        if (item.subtasks && item.subtasks.length > 0) {
+            return { ...item, subtasks: toggleInTree(item.subtasks, id) };
+        }
+        return item;
+    });
+};
+
+export const updateInTree = <T extends Task | Subtask>(items: T[], id: string, updates: Partial<Subtask>): T[] => {
+    return items.map(item => {
+        if (item.id === id) {
+            return { ...item, ...updates, updatedAt: new Date().toISOString() };
+        }
+        if (item.subtasks && item.subtasks.length > 0) {
+            return { ...item, subtasks: updateInTree(item.subtasks, id, updates) };
+        }
+        return item;
+    });
+};
+
+export const deleteFromTree = <T extends Task | Subtask>(items: T[], id: string): T[] => {
+    return items
+        .filter(item => item.id !== id)
+        .map(item => {
+             if (item.subtasks && item.subtasks.length > 0) {
+                 return { ...item, subtasks: deleteFromTree(item.subtasks, id) };
+             }
+             return item;
+        });
+};
+
+export const addToTree = <T extends Task | Subtask>(items: T[], parentId: string, newSubtask: Subtask): T[] => {
+    return items.map(item => {
+        if (item.id === parentId) {
+            return { ...item, subtasks: [...item.subtasks, newSubtask] };
+        }
+        if (item.subtasks && item.subtasks.length > 0) {
+             return { ...item, subtasks: addToTree(item.subtasks, parentId, newSubtask) };
+        }
+        return item;
+    });
+};

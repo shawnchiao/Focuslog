@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { generateId, parseTaskInput } from './utils';
+import { generateId, parseTaskInput, toggleInTree, updateInTree, deleteFromTree, addToTree } from './utils';
 import { Task, Subtask } from './types';
 import { Button, Badge } from './components/ui';
 import { TaskItem } from './components/TaskItem';
@@ -35,10 +35,13 @@ function App() {
   // --- Derived State (Filters & Tags) ---
   const allTags = useMemo(() => {
     const tags = new Set<string>();
-    tasks.forEach(t => {
-      t.tags.forEach(tag => tags.add(tag));
-      t.subtasks.forEach(st => st.tags.forEach(tag => tags.add(tag)));
-    });
+    const collectTags = (items: (Task | Subtask)[]) => {
+        items.forEach(item => {
+            item.tags.forEach(t => tags.add(t));
+            if (item.subtasks) collectTags(item.subtasks);
+        });
+    };
+    collectTags(tasks);
     return Array.from(tags).sort();
   }, [tasks]);
 
@@ -64,81 +67,32 @@ function App() {
     setSuggestedTags([]);
   };
 
-  const updateTask = (id: string, updates: Partial<Task>) => {
-    setTasks(prev => prev.map(t => 
-      t.id === id 
-        ? { ...t, ...updates, updatedAt: new Date().toISOString() }
-        : t
-    ));
+  const handleUpdate = (id: string, updates: Partial<Subtask>) => {
+    setTasks(prev => updateInTree(prev, id, updates) as Task[]);
   };
 
-  const toggleTask = (id: string) => {
-    setTasks(prev => prev.map(t => {
-      if (t.id !== id) return t;
-      const isCompleted = !t.isCompleted;
-      return {
-        ...t,
-        isCompleted,
-        completedAt: isCompleted ? new Date().toISOString() : undefined,
-        updatedAt: new Date().toISOString()
-      };
-    }));
+  const handleToggle = (id: string) => {
+    setTasks(prev => toggleInTree(prev, id) as Task[]);
   };
 
-  const deleteTask = (id: string) => {
+  const handleDelete = (id: string) => {
     if (window.confirm('Delete this task?')) {
-      setTasks(prev => prev.filter(t => t.id !== id));
+      setTasks(prev => deleteFromTree(prev, id) as Task[]);
     }
   };
 
-  const addSubtask = (taskId: string, title: string, tags: string[]) => {
-    setTasks(prev => prev.map(task => {
-      if (task.id !== taskId) return task;
-      const subtask: Subtask = {
+  const handleAddSubtask = (parentId: string, title: string, tags: string[]) => {
+    const newSubtask: Subtask = {
         id: generateId(),
-        parentId: taskId,
+        parentId,
         title,
         tags,
         isCompleted: false,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      return { ...task, subtasks: [...task.subtasks, subtask] };
-    }));
-  };
-
-  const updateSubtask = (taskId: string, subtaskId: string, updates: Partial<Subtask>) => {
-    setTasks(prev => prev.map(task => {
-      if (task.id !== taskId) return task;
-      const updatedSubtasks = task.subtasks.map(st => {
-        if (st.id !== subtaskId) return st;
-        return { ...st, ...updates, updatedAt: new Date().toISOString() };
-      });
-      return { ...task, subtasks: updatedSubtasks };
-    }));
-  };
-
-  const toggleSubtask = (taskId: string, subtaskId: string) => {
-    setTasks(prev => prev.map(task => {
-      if (task.id !== taskId) return task;
-      const updatedSubtasks = task.subtasks.map(st => {
-        if (st.id !== subtaskId) return st;
-        const isCompleted = !st.isCompleted;
-        return { 
-          ...st, 
-          isCompleted, 
-          completedAt: isCompleted ? new Date().toISOString() : undefined 
-        };
-      });
-      return { ...task, subtasks: updatedSubtasks };
-    }));
-  };
-
-  const deleteSubtask = (taskId: string, subtaskId: string) => {
-    setTasks(prev => prev.map(task => {
-      if (task.id !== taskId) return task;
-      return { ...task, subtasks: task.subtasks.filter(st => st.id !== subtaskId) };
-    }));
+        updatedAt: new Date().toISOString(),
+        subtasks: []
+    };
+    setTasks(prev => addToTree(prev, parentId, newSubtask) as Task[]);
   };
 
   // --- Input Handling with Autocomplete ---
@@ -225,6 +179,8 @@ function App() {
 
       if (searchQuery) {
         const lowerQ = searchQuery.toLowerCase();
+        // Recursive search for title? Assuming root title match for now or deep?
+        // Let's keep it simple: root title match
         const matchesTitle = task.title.toLowerCase().includes(lowerQ);
         if (!matchesTitle) return false;
       }
@@ -236,9 +192,12 @@ function App() {
       }
 
       if (selectedTags.length > 0) {
-        const taskTags = new Set([...task.tags, ...task.subtasks.flatMap(s => s.tags)]);
-        const hasTag = selectedTags.some(tag => taskTags.has(tag));
-        if (!hasTag) return false;
+        const hasTagRecursive = (item: Task | Subtask): boolean => {
+            const itemHasTag = selectedTags.some(tag => item.tags.includes(tag));
+            if (itemHasTag) return true;
+            return !!(item.subtasks && item.subtasks.some(st => hasTagRecursive(st)));
+        };
+        if (!hasTagRecursive(task)) return false;
       }
 
       return true;
@@ -492,13 +451,10 @@ function App() {
                                 <TaskItem
                                     key={task.id}
                                     task={task}
-                                    onToggle={toggleTask}
-                                    onDelete={deleteTask}
-                                    onUpdate={updateTask}
-                                    onAddSubtask={addSubtask}
-                                    onUpdateSubtask={updateSubtask}
-                                    onToggleSubtask={toggleSubtask}
-                                    onDeleteSubtask={deleteSubtask}
+                                    onToggle={handleToggle}
+                                    onDelete={handleDelete}
+                                    onUpdate={handleUpdate}
+                                    onAddSubtask={handleAddSubtask}
                                     expandDetails={expandDetails}
                                     expandSubtasks={expandSubtasks}
                                 />
@@ -512,13 +468,10 @@ function App() {
                     <TaskItem
                     key={task.id}
                     task={task}
-                    onToggle={toggleTask}
-                    onDelete={deleteTask}
-                    onUpdate={updateTask}
-                    onAddSubtask={addSubtask}
-                    onUpdateSubtask={updateSubtask}
-                    onToggleSubtask={toggleSubtask}
-                    onDeleteSubtask={deleteSubtask}
+                    onToggle={handleToggle}
+                    onDelete={handleDelete}
+                    onUpdate={handleUpdate}
+                    onAddSubtask={handleAddSubtask}
                     expandDetails={expandDetails}
                     expandSubtasks={expandSubtasks}
                     />

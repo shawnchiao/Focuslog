@@ -10,6 +10,7 @@ export interface Subtask {
   isCompleted: boolean;
   createdAt: string; // ISO
   updatedAt: string; // ISO
+  subtasks: Subtask[];
 }
 
 export interface Task {
